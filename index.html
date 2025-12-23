@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estructura Semántica</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Mi Sitio Web</h1>
+        <button id="boton-modo">🌙 Modo Oscuro</button>
+        <nav>
+            <ul>
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Servicios</a></li>
+                <li><a href="#">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Bienvenido</h2>
+            <p>Esta es la sección principal donde explico qué hago.</p>
+            <img src="https://via.placeholder.com/300" alt="Imagen de ejemplo">
+        </section>
+
+<section class="contacto-section">
+    <h2>Contáctame</h2>
+    <form id="form-contacto">
+        <input type="text" placeholder="Tu Nombre" required>
+        <input type="email" placeholder="Tu Correo" required>
+        <textarea placeholder="Escribe tu mensaje aquí..." rows="4"></textarea>
+        <button type="submit">Enviar Mensaje</button>
+    </form>
+</section>
+
+        <section>
+            <h2>Últimas noticias</h2>
+            <article>
+                <h3>Noticia 1</h3>
+                <p>Detalle de la noticia...</p>
+            </article>
+        </section>
+        <section class="api-section">
+    <h2>Usuarios de la Comunidad</h2>
+    
+    <div id="usuario-tarjeta" class="tarjeta">
+        <p>Cargando usuario...</p>
+    </div>
+
+    <button id="btn-cargar-usuario" style="margin-top: 20px;">🔄 Obtener otro usuario</button>
+</section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 - Creado por mi alumno estrella.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

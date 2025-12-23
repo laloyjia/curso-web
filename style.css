@@ -1,0 +1,170 @@
+/* 1. RESET: Quitamos los márgenes por defecto del navegador */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Fundamental para que los tamaños no se rompan */
+}
+
+/* 2. GENERAL: Fuente y color de fondo */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6; /* Altura de línea para leer mejor */
+}
+
+/* 3. HEADER: Fondo oscuro y texto blanco */
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 1rem; /* 1rem es aprox 16px */
+    text-align: center;
+}
+
+/* 4. EL MENÚ (NAV): La parte más importante hoy */
+nav ul {
+    list-style: none; /* Quita los puntitos de la lista */
+    padding-top: 10px;
+}
+
+nav ul li {
+    display: inline; /* ¡MAGIA! Pone los elementos uno al lado del otro */
+    margin: 0 15px; /* Espacio a los lados de cada botón */
+}
+
+nav a {
+    color: white;
+    text-decoration: none; /* Quita el subrayado feo de los links */
+    font-weight: bold;
+}
+
+/* 5. MAIN: Contenedor centrado tipo "columna" */
+main {
+    max-width: 800px; /* Que no se estire en pantallas gigantes */
+    margin: 20px auto; /* auto a los lados CENTRA el bloque */
+    padding: 20px;
+    background: white;
+}
+
+/* 6. FOOTER */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #333;
+    color: white;
+    margin-top: 20px;
+}
+
+/* Clase para modo oscuro */
+.modo-oscuro {
+    background-color: #121212; /* Fondo casi negro */
+    color: #e0e0e0; /* Texto gris claro */
+}
+
+/* Cuando el modo oscuro esté activo, cambiamos también el main y header */
+.modo-oscuro main {
+    background-color: #1e1e1e;
+    color: #fff;
+    border: 1px solid #333;
+}
+
+.modo-oscuro header {
+    background-color: #000;
+}
+
+/* Estilos del formulario */
+#form-contacto {
+    display: flex;             /* Activa el modo "Caja Flexible" */
+    flex-direction: column;    /* Ordena los elementos en columna (uno bajo otro) */
+    gap: 15px;                 /* Espacio automático entre cada elemento */
+    max-width: 400px;          /* Que no sea muy ancho */
+    margin: 0 auto;            /* Centrado horizontalmente */
+}
+
+input, textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: inherit;      /* Hereda la fuente del body */
+}
+
+/* Un toque especial al botón del formulario */
+#form-contacto button {
+    background-color: #27ae60; /* Verde */
+    color: white;
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s; /* Suaviza el cambio de color */
+}
+
+#form-contacto button:hover {
+    background-color: #2ecc71;
+}
+
+/* --- DISEÑO RESPONSIVO (PARA CELULARES) --- */
+
+/* Esta regla se activa SOLO si la pantalla mide 600px o menos */
+@media (max-width: 600px) {
+    
+    /* 1. Cambiamos el menú para que sea vertical */
+    nav ul li {
+        display: block; /* Pone uno debajo del otro */
+        margin: 10px 0; /* Más espacio vertical */
+        border-bottom: 1px solid #555; /* Una línea separadora */
+        padding-bottom: 5px;
+    }
+
+    /* 2. Ajustamos el ancho del contenido principal */
+    main {
+        width: 95%; /* Ocupa casi todo el ancho de la pantalla */
+        padding: 10px;
+    }
+
+    /* 3. Ajustamos el tamaño de la letra para que se lea mejor */
+    h1 {
+        font-size: 1.5rem;
+    }
+}
+section {
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Prepara el movimiento */
+}
+
+section:hover {
+    transform: translateY(-5px); /* Se mueve 5 pixeles hacia arriba */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2); /* La sombra crece */
+}
+
+/* Definimos la animación */
+@keyframes aparecerDesdeAbajo {
+    from {
+        opacity: 0;             /* Empieza invisible */
+        transform: translateY(30px); /* Empieza 30px más abajo */
+    }
+    to {
+        opacity: 1;             /* Termina visible */
+        transform: translateY(0);    /* Termina en su lugar original */
+    }
+}
+
+/* Se la aplicamos al cuerpo de la web */
+body {
+    animation: aparecerDesdeAbajo 1s ease-out; /* Dura 1 segundo */
+}
+
+.api-section {
+    text-align: center;
+    margin: 40px 0;
+}
+
+#usuario-tarjeta img {
+    border-radius: 50%; /* Hace la foto redonda */
+    border: 3px solid #3498db;
+    margin-bottom: 10px;
+}
+
+#usuario-tarjeta h3 {
+    color: #2c3e50;
+    margin: 5px 0;
+}
