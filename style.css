@@ -21,23 +21,6 @@ header {
     text-align: center;
 }
 
-/* 4. EL MENÚ (NAV): La parte más importante hoy */
-nav ul {
-    list-style: none; /* Quita los puntitos de la lista */
-    padding-top: 10px;
-}
-
-nav ul li {
-    display: inline; /* ¡MAGIA! Pone los elementos uno al lado del otro */
-    margin: 0 15px; /* Espacio a los lados de cada botón */
-}
-
-nav a {
-    color: white;
-    text-decoration: none; /* Quita el subrayado feo de los links */
-    font-weight: bold;
-}
-
 /* 5. MAIN: Contenedor centrado tipo "columna" */
 main {
     max-width: 800px; /* Que no se estire en pantallas gigantes */
