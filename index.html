@@ -22,38 +22,39 @@
     </header>
 
     <main>
-        <section>
-            <h2>Bienvenido</h2>
-            <p>Esta es la sección principal donde explico qué hago.</p>
-            <img src="https://via.placeholder.com/300" alt="Imagen de ejemplo">
-        </section>
+  <main class="container mt-4"> <div class="row"> <div class="col-md-6"> 
+            <section id="noticias">
+                <h2>📰 Últimas Noticias</h2>
+                <article>
+                    <h3>Nueva IA lanzada</h3>
+                    <p>Google presenta su nuevo modelo...</p>
+                </article>
+                <article>
+                    <h3>Aprende HTML hoy</h3>
+                    <p>Es más fácil de lo que crees...</p>
+                </article>
+            </section>
+        </div>
 
-<section class="contacto-section">
-    <h2>Contáctame</h2>
-    <form id="form-contacto">
-        <input type="text" placeholder="Tu Nombre" required>
-        <input type="email" placeholder="Tu Correo" required>
-        <textarea placeholder="Escribe tu mensaje aquí..." rows="4"></textarea>
-        <button type="submit" class="btn btn-success w-100">Enviar Mensaje</button>
-    </form>
-</section>
+        <div class="col-md-6">
+            <section class="api-section tarjeta">
+                <h2>Usuarios de la Comunidad</h2>
+                <div id="usuario-tarjeta">
+                    <p>Cargando usuario...</p>
+                </div>
+                <button id="btn-cargar-usuario" class="btn btn-primary mt-3">🔄 Obtener otro usuario</button>
+            </section>
+        </div>
 
-        <section>
-            <h2>Últimas noticias</h2>
-            <article>
-                <h3>Noticia 1</h3>
-                <p>Detalle de la noticia...</p>
-            </article>
-        </section>
-        <section class="api-section">
-    <h2>Usuarios de la Comunidad</h2>
-    
-    <div id="usuario-tarjeta" class="tarjeta">
-        <p>Cargando usuario...</p>
+    </div> <hr> <div class="row">
+        <div class="col-12">
+            <section id="contacto">
+                <h2>📩 Contáctanos</h2>
+                 </section>
+        </div>
     </div>
 
-    <button id="btn-cargar-usuario" style="margin-top: 20px;">🔄 Obtener otro usuario</button>
-</section>
+</main>
     </main>
 
     <footer>
