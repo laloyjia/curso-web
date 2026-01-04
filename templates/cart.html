@@ -1,0 +1,202 @@
+{% extends "layout.html" %}
+
+{% block title %}Bolsa de Compras | LimaLimoon{% endblock %}
+
+{% block content %}
+<style>
+    /* --- ESTILOS GENERALES --- */
+    .cart-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; min-height: 70vh; }
+    
+    .cart-header { margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
+    .cart-title { font-family: var(--font-title); font-size: 2.2rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+    
+    .cart-layout { display: grid; grid-template-columns: 1.8fr 1fr; gap: 40px; align-items: start; }
+    
+    /* --- LISTA DE PRODUCTOS --- */
+    .cart-items { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; overflow: hidden; }
+    
+    .cart-item { display: flex; align-items: center; padding: 20px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
+    .cart-item:hover { background: #fafafa; }
+    .cart-item:last-child { border-bottom: none; }
+    
+    .item-image img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+    
+    .item-details { flex-grow: 1; padding: 0 20px; }
+    .item-name { font-size: 1.1rem; font-weight: 600; font-family: var(--font-title); display: block; color: #333; }
+    .item-category { font-size: 0.75rem; color: #888; background: #f4f4f4; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .item-price { font-weight: 600; color: var(--gold); font-size: 1.1rem; margin-top: 5px; }
+    
+    /* --- CONTROLES DE CANTIDAD --- */
+    .item-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 120px; }
+    
+    .quantity-control { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 20px; overflow: hidden; background: white; }
+    .qty-btn { padding: 5px 12px; text-decoration: none; color: #555; font-weight: bold; transition: 0.2s; background: #f9f9f9; }
+    .qty-btn:hover { background: #eee; }
+    .qty-number { padding: 0 10px; font-size: 0.9rem; font-weight: bold; border-left: 1px solid #eee; border-right: 1px solid #eee; }
+    
+    .btn-delete { color: #e74c3c; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 5px; opacity: 0.7; transition: 0.2s; cursor: pointer;}
+    .btn-delete:hover { opacity: 1; text-decoration: underline; }
+
+    /* --- RESUMEN DE PAGO --- */
+    .cart-summary { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); position: sticky; top: 100px; border: 1px solid #eee; }
+    
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1rem; color: #555; }
+    .summary-total { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #ddd; font-size: 1.4rem; font-weight: 800; color: var(--gold); font-family: var(--font-title); }
+
+    /* --- INPUT DIRECCIÓN --- */
+    .address-box { margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; }
+    .address-label { font-size: 0.9rem; font-weight: 700; color: #333; margin-bottom: 8px; display: block; }
+    .address-input { 
+        width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; 
+        font-family: var(--font-body); font-size: 0.95rem; box-sizing: border-box; background: #fff; transition: 0.3s;
+    }
+    .address-input:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+
+    /* --- BOTÓN WHATSAPP --- */
+    .btn-checkout { display: block; width: 100%; padding: 16px; background: #25D366; color: white; text-align: center; border-radius: 8px; font-size: 1.1rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: transform 0.2s; border: none; cursor: pointer; }
+    .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5); background: #20bd5a; color: white; }
+    /* Estado deshabilitado para evitar doble click */
+    .btn-checkout:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* --- BANCO --- */
+    .bank-card { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; padding: 20px; margin: 25px 0; border: 1px solid #ddd; position: relative; overflow: hidden; }
+    .bank-card::before { content: "TRANSFERENCIA"; position: absolute; top: 15px; right: -25px; background: var(--gold); color: white; font-size: 0.65rem; padding: 5px 30px; transform: rotate(45deg); font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .bank-detail { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 4px; }
+    .bank-detail:last-child { border: none; }
+    
+    /* --- EMPTY STATE --- */
+    .empty-cart { text-align: center; padding: 80px 20px; display: flex; flex-direction: column; align-items: center; }
+    .empty-icon { font-size: 4rem; color: #ddd; margin-bottom: 20px; }
+    
+    @media (max-width: 768px) { 
+        .cart-layout { grid-template-columns: 1fr; } 
+        .item-image img { width: 60px; height: 60px; } 
+        .item-details { padding: 0 15px; }
+        .cart-summary { position: static; margin-top: 30px; }
+    }
+</style>
+
+<div class="cart-container">
+    <div class="cart-header">
+        <h1 class="cart-title">Tu Bolsa de Compras</h1>
+    </div>
+
+    {% if cart_items %}
+    <div class="cart-layout">
+        
+        <div class="cart-items">
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <div class="item-image">
+                    <img src="{{ item.product.image }}" onerror="this.src='https://via.placeholder.com/150?text=Sin+Foto'">
+                </div>
+                
+                <div class="item-details">
+                    <span class="item-category">{{ item.product.category }}</span>
+                    <span class="item-name">{{ item.product.name }}</span>
+                    <div class="item-price">${{ "{:,.0f}".format(item.product.price).replace(',', '.') }}</div>
+                    {% if item.product.stock < 5 %}
+                        <small style="color: #e74c3c; font-size: 0.8rem; font-weight: bold;">¡Últimas {{ item.product.stock }} unidades!</small>
+                    {% else %}
+                        <small style="color: #888; font-size: 0.8rem;">Stock: {{ item.product.stock }} un.</small>
+                    {% endif %}
+                </div>
+                
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <a href="{{ url_for('update_cart', product_id=item.product.id, action='decrease') }}" class="qty-btn">-</a>
+                        <span class="qty-number">{{ item.quantity }}</span>
+                        <a href="{{ url_for('update_cart', product_id=item.product.id, action='increase') }}" class="qty-btn">+</a>
+                    </div>
+
+                    <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="btn-delete" onclick="return confirm('¿Seguro que deseas eliminar este producto?');">
+                        <i class="fas fa-trash-alt"></i> Eliminar
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div style="padding: 20px; text-align: center; background: #fafafa; border-top: 1px solid #eee;">
+                <a href="{{ url_for('home') }}" style="color: #666; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
+                    <i class="fas fa-arrow-left"></i> SEGUIR MIRANDO
+                </a>
+            </div>
+        </div>
+
+        <aside>
+            <form action="{{ url_for('confirmar_pedido') }}" method="POST" class="cart-summary" id="orderForm">
+                <h3 style="margin-bottom: 25px; font-weight: 700; font-family: var(--font-title);">Resumen del Pedido</h3>
+                
+                <div class="summary-row">
+                    <span>Subtotal Productos</span>
+                    <span>${{ "{:,.0f}".format(subtotal).replace(',', '.') }}</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Envío a Domicilio</span>
+                    {% if costo_envio == 0 %}
+                        <span style="color: #27ae60; font-weight: bold;">¡GRATIS!</span>
+                    {% else %}
+                        <span>${{ "{:,.0f}".format(costo_envio).replace(',', '.') }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if costo_envio > 0 %}
+                    <div style="font-size: 0.85rem; color: #d35400; margin-bottom: 15px; text-align: right; background: #fff5e6; padding: 8px; border-radius: 4px; border-left: 3px solid #d35400;">
+                        <i class="fas fa-shipping-fast"></i> Faltan <b>${{ "{:,.0f}".format(25000 - subtotal).replace(',', '.') }}</b> para envío gratis.
+                    </div>
+                {% endif %}
+
+                <div class="address-box">
+                    <label class="address-label"><i class="fas fa-map-marker-alt" style="color: var(--gold);"></i> Dirección de Envío:</label>
+                    <input type="text" name="direccion" class="address-input" 
+                           value="{{ current_user.direccion | default('') }}" 
+                           placeholder="Calle, Número, Comuna..." required>
+                    <span style="font-size: 0.75rem; color: #999; margin-top: 5px; display: block;">* Requerido para el despacho.</span>
+                </div>
+
+                <div class="summary-total">
+                    <span>Total a Pagar</span>
+                    <span>${{ "{:,.0f}".format(total).replace(',', '.') }}</span>
+                </div>
+
+                <div class="bank-card">
+                    <div style="text-align: center; margin-bottom: 10px; color: var(--gold);">
+                        <i class="fas fa-university fa-2x"></i>
+                    </div>
+                    <div class="bank-detail"><span style="color:#666;">Nombre:</span> <strong>LimaLimoon Spa</strong></div>
+                    <div class="bank-detail"><span style="color:#666;">RUT:</span> <strong>17.821.405-5</strong></div>
+                    <div class="bank-detail"><span style="color:#666;">Banco:</span> <strong>Tenpo</strong></div>
+                    <div class="bank-detail"><span style="color:#666;">Tipo:</span> <strong>Vista/Prepago</strong></div>
+                    <div class="bank-detail"><span style="color:#666;">Cuenta:</span> <strong>111117821405</strong></div>
+                </div>
+
+                <button type="submit" class="btn-checkout" id="btnSubmit">
+                   <i class="fab fa-whatsapp"></i> ENVIAR PEDIDO
+                </button>
+                
+                <p style="text-align: center; margin-top: 15px; font-size: 0.75rem; color: #999; line-height: 1.4;">
+                    <i class="fas fa-lock"></i> Al hacer clic, se descontará el stock y se abrirá WhatsApp.
+                </p>
+            </form>
+        </aside>
+    </div>
+
+    {% else %}
+        <div class="empty-cart">
+            <i class="fas fa-shopping-basket empty-icon"></i>
+            <h2 style="color: #444; font-family: var(--font-title);">Tu bolsa está vacía</h2>
+            <p style="color: #888; margin-bottom: 30px;">¡Tenemos cosas hermosas esperando por ti!</p>
+            <a href="{{ url_for('home') }}" class="btn-checkout" style="background: var(--gold); width: auto; padding: 12px 30px;">IR AL CATÁLOGO</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.getElementById('orderForm').addEventListener('submit', function() {
+        var btn = document.getElementById('btnSubmit');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        btn.style.opacity = '0.7';
+    });
+</script>
+{% endblock %}

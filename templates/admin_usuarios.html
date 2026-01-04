@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}Usuarios | Admin{% endblock %}
+{% block content %}
+<div class="container section-padding" style="margin-top: 40px;">
+    <h2>Usuarios Registrados</h2>
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f8f8; text-align: left;">
+                    <th style="padding: 10px;">ID</th>
+                    <th style="padding: 10px;">Nombre</th>
+                    <th style="padding: 10px;">Email</th>
+                    <th style="padding: 10px;">Teléfono</th>
+                    <th style="padding: 10px;">Rol</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;">#{{ u.id }}</td>
+                    <td style="padding: 10px;">{{ u.nombre }} {{ u.apellido }}</td>
+                    <td style="padding: 10px;">{{ u.email }}</td>
+                    <td style="padding: 10px;">{{ u.telefono }}</td>
+                    <td style="padding: 10px;">
+                        {% if u.is_admin %}
+                            <span style="background: #e3f2fd; color: #1565c0; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">Admin</span>
+                        {% else %}
+                            <span style="color: #666;">Cliente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-gold">Volver</a>
+    </div>
+</div>
+{% endblock %}

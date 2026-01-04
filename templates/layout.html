@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LimaLimoon Boutique - Moda y estilo en Talca y Maule Norte.">
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}"> 
+    <title>LimaLimoon | {% block title %}Inicio{% endblock %}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --brand-green: rgb(46, 114, 50);
+            --brand-gold: #d4af37;
+            --brand-dark: #1a1a1a;
+            --font-title: 'Playfair Display', serif;
+            --font-body: 'Lato', sans-serif;
+        }
+
+        body { font-family: var(--font-body); margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+
+        .announcement-bar {
+            background: var(--brand-dark); color: var(--brand-gold); padding: 10px 0;
+            text-align: center; font-size: 0.75rem; letter-spacing: 2px; font-weight: bold; text-transform: uppercase; width: 100%;
+        }
+
+        .main-header {
+            position: sticky; top: 0; z-index: 1000; width: 100%;
+            background: var(--brand-green); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
+        }
+
+        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .logo { font-family: var(--font-title); color: white; font-size: 1.5rem; text-decoration: none; font-weight: 700; letter-spacing: 1px; }
+
+        .nav-links { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; align-items: center; }
+        .nav-links a { text-decoration: none; color: white; font-weight: 400; transition: color 0.3s ease; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;}
+        .nav-links a:hover { color: var(--brand-gold); }
+
+        /* --- ESTILOS DEL CARRITO --- */
+        .cart-icon-wrapper { 
+            position: relative; 
+            display: inline-flex; 
+            align-items: center; justify-content: center;
+            padding: 5px;
+            transition: transform 0.2s;
+        }
+        .cart-icon-wrapper:hover { transform: scale(1.1); }
+        .cart-icon-wrapper i { font-size: 1.3rem; }
+        
+        #cart-count {
+            background: var(--brand-gold); color: white; border-radius: 50%;
+            position: absolute; top: -6px; right: -10px; 
+            width: 20px; height: 20px; 
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.7rem; font-weight: bold; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid var(--brand-green); 
+            animation: pulse-gold 2s infinite;
+        }
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 4px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); animation: slideIn 0.5s ease-out; }
+        .alert-success { background-color: #d4edda; color: #155724; border-left: 5px solid #28a745; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border-left: 5px solid #ffc107; }
+        .alert-error { background-color: #f8d7da; color: #721c24; border-left: 5px solid #dc3545; }
+        .close-alert { position: absolute; top: 10px; right: 15px; cursor: pointer; font-weight: bold; opacity: 0.5; }
+
+        .main-footer { padding: 40px 20px; text-align: center; background: var(--brand-dark); color: #888; margin-top: auto; }
+        .whatsapp-float {
+            position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white;
+            width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 1000; text-decoration: none; transition: transform 0.3s;
+        }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) { .header-content { flex-direction: column; gap: 15px; } .nav-links { gap: 15px; font-size: 0.9rem; } }
+    </style>
+</head>
+<body>
+
+    <div class="announcement-bar">
+        ✨ Despacho GRATIS en Talca y Maule Norte por compras sobre $25.000 ✨
+    </div>
+
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="{{ url_for('home') }}" class="logo">LimaLimoon</a>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}">INICIO</a></li>
+                    
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                            <li><a href="{{ url_for('admin_dashboard') }}" style="color: var(--brand-gold);"><i class="fas fa-tools"></i> ADMIN</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('perfil') }}"><i class="fas fa-user"></i> MI CUENTA</a></li>
+                        <li><a href="{{ url_for('logout') }}">SALIR</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">INGRESAR</a></li>
+                        <li><a href="{{ url_for('registro') }}">REGISTRO</a></li>
+                    {% endif %}
+                    
+                    <li>
+                        <a href="{{ url_for('carrito') }}" class="cart-icon-wrapper" title="Ver mi carrito">
+                            <i class="fas fa-shopping-cart"></i>
+                            
+                            {# --- AQUÍ ESTÁ LA MAGIA --- #}
+                            {# Usamos 'cart_count' que viene directo de tu app.py #}
+                            
+                            {% if cart_count and cart_count > 0 %}
+                                <span id="cart-count">{{ cart_count }}</span>
+                            {% endif %}
+                            
+                            {# ------------------------- #}
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container" style="margin-top: 20px;">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category in ['success', 'warning'] else 'error' }}">
+                            <span class="close-alert" onclick="this.parentElement.style.display='none';">&times;</span>
+                            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <p style="font-family: var(--font-title); color: var(--brand-gold); margin-bottom: 10px; letter-spacing: 2px; font-size: 1.4rem;">LimaLimoon</p>
+        <p>&copy; 2026 LimaLimoon Boutique. Todos los derechos reservados.</p>
+    </footer>
+
+    <a href="https://wa.me/56968498218" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+</body>
+</html>

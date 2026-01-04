@@ -1,0 +1,199 @@
+{% extends "layout.html" %}
+
+{% block title %}Mi Carrito | LimaLimoon{% endblock %}
+
+{% block content %}
+<div class="container section-padding" style="min-height: 80vh; padding-top: 50px; background: #fdfdfd;">
+    <h1 style="font-family: var(--font-title); text-align: center; margin-bottom: 40px; color: #1a1a1a;">Resumen de tu Pedido</h1>
+
+    <div id="cart-wrapper" style="display: flex; gap: 40px; flex-wrap: wrap;">
+        
+        <div style="flex: 2; min-width: 320px;">
+            <div style="margin-bottom: 20px;">
+                <a href="{{ url_for('index') }}" style="text-decoration: none; color: #666; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; font-weight: bold; letter-spacing: 1px;">
+                    <i class="fas fa-arrow-left"></i> SEGUIR COMPRANDO
+                </a>
+            </div>
+
+            <div id="cart-items" style="background: white; border-radius: 8px; border: 1px solid #eee; overflow: hidden;">
+                </div>
+        </div>
+
+        <div id="cart-sidebar" style="flex: 1; min-width: 320px; background: white; padding: 30px; border: 1px solid #eee; border-radius: 8px; height: fit-content; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <h3 style="font-family: var(--font-title); margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Finalizar Pedido</h3>
+            
+            <form id="checkout-form">
+                <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">* Despacho solo en Talca y Maule Norte</p>
+                
+                <input type="text" id="cust_name" placeholder="Nombre completo" required 
+                       value="{{ current_user.nombre + ' ' + current_user.apellido if current_user.is_authenticated else '' }}" 
+                       style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                
+                <input type="text" id="cust_address" placeholder="Calle, número y sector" required 
+                       value="{{ current_user.direccion if current_user.is_authenticated else '' }}"
+                       style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
+                
+                <div id="resumen-pago" style="background: #f9f9f9; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+                    </div>
+
+                <div style="background: #fff; border: 1px dashed var(--gold); padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 0.85rem; border-left: 4px solid var(--gold);">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #1a1a1a; text-align: center; text-transform: uppercase; letter-spacing: 1px;">🏦 Datos de Transferencia</p>
+                    <div style="color: #444; line-height: 1.6;">
+                        <strong>Titular:</strong> LimaLimoon Boutique<br>
+                        <strong>Rut:</strong> 17.821.405-5<br>
+                        <strong>Banco:</strong> Tenpo (Prepago/Vista)<br>
+                        <strong>N° Cuenta:</strong> 111117821405<br>
+                        <strong>Email:</strong> pagos@limalimoon.cl
+                    </div>
+                    <p style="margin: 10px 0 0 0; font-size: 0.75rem; font-style: italic; color: #d4af37; text-align: center;">
+                        * Envía el comprobante por WhatsApp al finalizar.
+                    </p>
+                </div>
+
+                <button type="button" onclick="sendWhatsApp()" style="width: 100%; background: #25D366; color: white; padding: 18px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; transition: 0.3s;">
+                    <i class="fab fa-whatsapp" style="font-size: 1.4rem;"></i> ENVIAR PEDIDO A LIMALIMOON
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="empty-cart-msg" style="text-align: center; padding: 100px 20px; display: none;">
+        <i class="fas fa-shopping-bag" style="font-size: 4rem; color: #eee; margin-bottom: 20px;"></i>
+        <h2 style="color: #666; font-family: var(--font-title);">Tu bolsa está vacía</h2>
+        <a href="{{ url_for('index') }}" class="btn-gold" style="display: inline-block; margin-top: 20px; text-decoration: none; padding: 15px 40px; background: #1a1a1a; color: white; border-radius: 4px; font-weight: bold;">Explorar Colección</a>
+    </div>
+</div>
+
+<script>
+function renderCart() {
+    const itemsContainer = document.getElementById('cart-items');
+    const sidebar = document.getElementById('cart-sidebar');
+    const emptyMsg = document.getElementById('empty-cart-msg');
+    const resumenContainer = document.getElementById('resumen-pago');
+    
+    const MIN_FREE_SHIPPING = 25000;
+    const DEFAULT_SHIPPING_COST = 5000;
+    
+    // Cambiado a limalimoon_cart para consistencia con layout.html
+    let cart = JSON.parse(localStorage.getItem('limalimoon_cart')) || [];
+
+    if (cart.length === 0) {
+        itemsContainer.innerHTML = '';
+        sidebar.style.display = 'none';
+        emptyMsg.style.display = 'block';
+        return;
+    }
+
+    emptyMsg.style.display = 'none';
+    sidebar.style.display = 'block';
+    
+    let html = '';
+    let subtotal = 0;
+
+    cart.forEach((item, index) => {
+        subtotal += item.price * item.quantity;
+        html += `
+            <div style="display: flex; align-items: center; background: white; padding: 20px; border-bottom: 1px solid #eee; gap: 20px;">
+                <img src="/static/uploads/${item.image}" style="width: 80px; height: 100px; object-fit: cover; border-radius: 4px;">
+                <div style="flex: 1;">
+                    <h4 style="margin: 0; font-family: var(--font-title); color: #333;">${item.name}</h4>
+                    <p style="color: var(--gold); margin: 5px 0; font-weight: bold;">$${item.price.toLocaleString('es-CL')}</p>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                        <div style="display: flex; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9;">
+                            <button onclick="changeQty(${index}, -1)" style="padding: 2px 10px; border: none; background: none; cursor: pointer;">-</button>
+                            <span style="padding: 2px 10px; border-left: 1px solid #ddd; border-right: 1px solid #ddd; font-size: 0.9rem;">${item.quantity}</span>
+                            <button onclick="changeQty(${index}, 1)" style="padding: 2px 10px; border: none; background: none; cursor: pointer;">+</button>
+                        </div>
+                        <button onclick="removeItem(${index})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 0.8rem; text-decoration: underline;">Quitar</button>
+                    </div>
+                </div>
+                <div style="font-weight: bold; color: #1a1a1a;">$${(item.price * item.quantity).toLocaleString('es-CL')}</div>
+            </div>
+        `;
+    });
+
+    let currentShippingCost = DEFAULT_SHIPPING_COST;
+    let promoMessage = "";
+
+    if (subtotal >= MIN_FREE_SHIPPING) {
+        currentShippingCost = 0;
+        promoMessage = `<div style="background: #e6fffa; color: #2c7a7b; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 0.85rem; border: 1px solid #b2f5ea; text-align: center;">✨ ¡Felicidades! Tienes <strong>Despacho Gratis</strong>.</div>`;
+    } else {
+        const missing = MIN_FREE_SHIPPING - subtotal;
+        promoMessage = `<div style="background: #fffaf0; color: #9c4221; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 0.85rem; border: 1px solid #feebc8; text-align: center;">Agrega <strong>$${missing.toLocaleString('es-CL')}</strong> más para tener <strong>Envío Gratis</strong>.</div>`;
+    }
+
+    itemsContainer.innerHTML = html;
+    
+    resumenContainer.innerHTML = `
+        ${promoMessage}
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+            <span>Subtotal:</span>
+            <span>$${subtotal.toLocaleString('es-CL')}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+            <span>Envío (Talca/Maule N.):</span>
+            <span style="${currentShippingCost === 0 ? 'color: #2ecc71; font-weight: bold;' : ''}">${currentShippingCost === 0 ? 'GRATIS' : '$' + currentShippingCost.toLocaleString('es-CL')}</span>
+        </div>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.3rem; color: #1a1a1a;">
+            <span>Total:</span>
+            <span>$${(subtotal + currentShippingCost).toLocaleString('es-CL')}</span>
+        </div>
+    `;
+    
+    window.lastSubtotal = subtotal;
+    window.lastShipping = currentShippingCost;
+}
+
+function changeQty(index, delta) {
+    let cart = JSON.parse(localStorage.getItem('limalimoon_cart'));
+    cart[index].quantity += delta;
+    if (cart[index].quantity < 1) return removeItem(index);
+    localStorage.setItem('limalimoon_cart', JSON.stringify(cart));
+    renderCart();
+    if(typeof updateCartIcon === "function") updateCartIcon();
+}
+
+function removeItem(index) {
+    let cart = JSON.parse(localStorage.getItem('limalimoon_cart'));
+    cart.splice(index, 1);
+    localStorage.setItem('limalimoon_cart', JSON.stringify(cart));
+    renderCart();
+    if(typeof updateCartIcon === "function") updateCartIcon();
+}
+
+function sendWhatsApp() {
+    const name = document.getElementById('cust_name').value;
+    const address = document.getElementById('cust_address').value;
+
+    if (!name || !address) {
+        alert("Por favor, ingresa tu nombre y dirección para el despacho.");
+        return;
+    }
+
+    let cart = JSON.parse(localStorage.getItem('limalimoon_cart'));
+    let totalFinal = window.lastSubtotal + window.lastShipping;
+    
+    let message = `✨ *NUEVO PEDIDO LIMALIMOON* ✨\n\n`;
+    message += `👤 *Cliente:* ${name}\n`;
+    message += `📍 *Dirección:* ${address}\n`;
+    message += `🚚 *Envío:* ${window.lastShipping === 0 ? 'GRATIS (Promoción)' : '$5.000'}\n`;
+    message += `--------------------------\n`;
+    
+    cart.forEach(item => {
+        message += `• ${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toLocaleString('es-CL')}\n`;
+    });
+
+    message += `--------------------------\n`;
+    message += `💰 *TOTAL A PAGAR: $${totalFinal.toLocaleString('es-CL')}*\n\n`;
+    message += `✅ *Ya realicé la transferencia.*\n`;
+    message += `📸 *Adjunto el comprobante a continuación.*`;
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/56968498218?text=${encodedMessage}`, '_blank');
+}
+
+document.addEventListener('DOMContentLoaded', renderCart);
+</script>
+{% endblock %}

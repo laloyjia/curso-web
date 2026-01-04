@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}Editar Mis Datos | LimaLimoon{% endblock %}
+
+{% block content %}
+<div class="container section-padding" style="max-width: 600px; margin: 60px auto;">
+    
+    <div style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee;">
+        <h2 style="font-family: var(--font-title); text-align: center; color: #1a1a1a; margin-bottom: 30px;">
+            Actualizar mis Datos
+        </h2>
+
+        <form action="{{ url_for('editar_perfil') }}" method="POST">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: #666; margin-bottom: 5px;">Nombre</label>
+                    <input type="text" name="nombre" value="{{ current_user.nombre }}" required
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; color: #666; margin-bottom: 5px;">Apellido</label>
+                    <input type="text" name="apellido" value="{{ current_user.apellido }}" required
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.8rem; color: #666; margin-bottom: 5px;">Teléfono</label>
+                <input type="tel" name="telefono" value="{{ current_user.telefono or '' }}" placeholder="+569..."
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; font-size: 0.8rem; color: #666; margin-bottom: 5px;">Dirección de Envío</label>
+                <input type="text" name="direccion" value="{{ current_user.direccion or '' }}" placeholder="Ej: Calle 1 Norte #123, Talca"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; font-size: 0.8rem; color: #999; margin-bottom: 5px;">Email (No editable)</label>
+                <input type="email" value="{{ current_user.email }}" disabled
+                       style="width: 100%; padding: 10px; border: 1px solid #eee; background: #f9f9f9; color: #999; border-radius: 4px;">
+            </div>
+
+            <button type="submit" class="btn-gold" style="width: 100%; padding: 12px; margin-bottom: 10px; border: none; cursor: pointer;">
+                Guardar Cambios
+            </button>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_for('perfil') }}" style="color: #666; font-size: 0.9rem; text-decoration: none;">Cancelar</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

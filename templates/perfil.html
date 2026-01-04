@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block title %}Mi Cuenta | LimaLimoon{% endblock %}
+
+{% block content %}
+<div class="container section-padding" style="margin-top: 50px; margin-bottom: 80px;">
+
+    <div style="margin-bottom: 40px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+        <h1 style="font-family: var(--font-title); font-size: 2rem; color: #1a1a1a;">
+            Hola, {{ current_user.nombre or current_user.email.split('@')[0] }}
+        </h1>
+        <p style="color: #666;">Bienvenido a tu espacio personal.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px;">
+        
+        <div>
+            <div style="background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+                <h3 style="font-family: var(--font-title); margin-bottom: 20px; color: var(--gold); border-bottom: 2px solid var(--gold); display: inline-block; padding-bottom: 5px;">Mis Datos</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px;">Nombre</label>
+                    <div style="font-weight: bold; color: #333; font-size: 1.1rem;">
+                        {{ current_user.nombre }} {{ current_user.apellido }}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px;">Email</label>
+                    <div style="color: #555;">{{ current_user.email }}</div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px;">Teléfono</label>
+                    <div style="color: #555;">{{ current_user.telefono or 'No registrado' }}</div>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px;">Dirección de Envío</label>
+                    <div style="color: #555;">
+                        <i class="fas fa-map-marker-alt" style="color: var(--gold); margin-right: 5px;"></i>
+                        {{ current_user.direccion or 'No registrada' }}
+                    </div>
+                </div>
+
+                <a href="{{ url_for('editar_perfil') }}" style="display: block; text-align: center; background: #333; color: white; padding: 10px; border-radius: 4px; text-decoration: none; margin-bottom: 15px; font-size: 0.9rem; transition: 0.3s;">
+                    <i class="fas fa-edit"></i> Editar mis Datos
+                </a>
+
+                <a href="{{ url_for('logout') }}" style="display: block; text-align: center; color: #999; text-decoration: none; font-size: 0.9rem; border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px;">
+                    Cerrar Sesión
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <h3 style="font-family: var(--font-title); margin-bottom: 20px;">Mis Pedidos Recientes</h3>
+
+            {% if orders %}
+                <div style="display: grid; gap: 20px;">
+                    {% for order in orders %}
+                    <div style="border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        
+                        <div style="background: #fcfcfc; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+                            <div>
+                                <span style="font-weight: bold; color: #333;">Pedido #{{ order.id }}</span>
+                                <span style="font-size: 0.85rem; color: #777; margin-left: 10px;">
+                                    {{ order.date_ordered.strftime('%d/%m/%Y') }}
+                                </span>
+                            </div>
+                            <div>
+                                <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">
+                                    {{ order.status }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style="padding: 20px;">
+                            <ul style="list-style: none; padding: 0; margin: 0 0 15px 0;">
+                                {% for detail in order.details %}
+                                <li style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; color: #555; border-bottom: 1px dashed #eee; padding-bottom: 5px;">
+                                    <span>
+                                        <b style="color: #333;">{{ detail.quantity }}x</b> {{ detail.product_name }}
+                                    </span>
+                                    <span>${{ "{:,.0f}".format(detail.product_price).replace(',', '.') }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <div style="text-align: right; font-weight: bold; color: #1a1a1a; font-size: 1.2rem;">
+                                Total: <span style="color: var(--gold);">${{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 60px 20px; background: #f9f9f9; border-radius: 8px; border: 2px dashed #ddd;">
+                    <i class="fas fa-shopping-basket" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h4 style="color: #666; margin-bottom: 10px;">No tienes pedidos aún</h4>
+                    <p style="color: #999; margin-bottom: 20px;">Parece que todavía no has comprado nada en LimaLimoon.</p>
+                    <a href="{{ url_for('home') }}" class="btn-gold" style="padding: 10px 30px;">Ir al Catálogo</a>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

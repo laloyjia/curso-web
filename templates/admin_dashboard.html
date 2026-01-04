@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Panel de Administración | LimaLimoon{% endblock %}
+
+{% block content %}
+<div class="container section-padding" style="padding-top: 60px; padding-bottom: 80px;">
+    
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-family: var(--font-title); color: #1a1a1a;">Panel de Control</h1>
+        <p style="color: #666;">Bienvenido Admin. ¿Qué deseas gestionar hoy?</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 1000px; margin: 0 auto;">
+        
+        <a href="{{ url_for('admin_productos') }}" class="admin-card">
+            <div class="icon-box"><i class="fas fa-boxes fa-3x"></i></div>
+            <h3>Productos</h3>
+            <p>Crear, editar y eliminar productos de la tienda.</p>
+        </a>
+
+        <a href="{{ url_for('admin_stock') }}" class="admin-card">
+            <div class="icon-box"><i class="fas fa-clipboard-check fa-3x"></i></div>
+            <h3>Inventario</h3>
+            <p>Ajuste rápido de cantidades y control de stock bajo.</p>
+        </a>
+
+        <a href="{{ url_for('lista_usuarios') }}" class="admin-card">
+            <div class="icon-box"><i class="fas fa-users fa-3x"></i></div>
+            <h3>Usuarios</h3>
+            <p>Ver lista de clientes registrados.</p>
+        </a>
+
+        <a href="{{ url_for('admin_ordenes') }}" class="admin-card">
+            <div class="icon-box"><i class="fas fa-shopping-bag fa-3x"></i></div>
+            <h3>Ventas</h3>
+            <p>Historial de pedidos y detalles de compra.</p>
+        </a>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 60px; display: flex; justify-content: center; gap: 20px;">
+        <a href="{{ url_for('home') }}" class="btn-outline">
+            <i class="fas fa-store"></i> Ver Tienda
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn-outline logout">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
+    </div>
+
+</div>
+
+<style>
+    /* Estilos locales para el Dashboard */
+    .admin-card {
+        background: white;
+        padding: 40px 25px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+        height: 100%;
+        box-sizing: border-box;
+        display: block;
+    }
+    .admin-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--gold);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .icon-box {
+        color: var(--gold);
+        margin-bottom: 20px;
+    }
+    .admin-card h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-family: var(--font-title);
+    }
+    .admin-card p {
+        color: #777;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+    .btn-outline {
+        padding: 10px 25px;
+        border-radius: 30px;
+        text-decoration: none;
+        border: 1px solid #ccc;
+        color: #555;
+        transition: 0.2s;
+    }
+    .btn-outline:hover {
+        background: #f5f5f5;
+        color: #333;
+    }
+    .btn-outline.logout {
+        border-color: #ffcccc;
+        color: #e74c3c;
+    }
+    .btn-outline.logout:hover {
+        background: #fff5f5;
+    }
+</style>
+{% endblock %}

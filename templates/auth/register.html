@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Crear Cuenta | LimaLimoon{% endblock %}
+
+{% block content %}
+<div class="container section-padding" style="max-width: 600px; margin-top: 50px; margin-bottom: 80px;">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="font-family: var(--font-title); font-size: 2.5rem;">Únete a Nosotros</h2>
+        <p style="color: #666;">Crea tu cuenta para gestionar tus pedidos.</p>
+    </div>
+
+    <form action="{{ url_for('registro') }}" method="POST" style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee;">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333;">Nombre</label>
+                <input type="text" name="nombre" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333;">Apellido</label>
+                <input type="text" name="apellido" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; color: #333;">Dirección de Envío</label>
+            <input type="text" name="direccion" placeholder="Calle, número, ciudad..." required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333;">Teléfono</label>
+                <input type="tel" name="telefono" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333;">Sexo</label>
+                <select name="sexo" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="Femenino">Femenino</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; color: #333;">Correo Electrónico</label>
+            <input type="email" name="email" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 5px; color: #333;">Contraseña</label>
+            <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <button type="submit" class="btn-gold" style="width: 100%; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer;">
+            CREAR CUENTA
+        </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <p style="color: #666;">¿Ya tienes cuenta? <a href="{{ url_for('login') }}" style="color: var(--gold); text-decoration: none; font-weight: bold;">Inicia Sesión</a></p>
+    </div>
+</div>
+{% endblock %}

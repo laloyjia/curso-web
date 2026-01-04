@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% set imagen_portada = url_for('static', filename='img/portada.jpg') %}
+
+{# --- MACRO: Tarjeta de Producto --- #}
+{% macro render_product_card(product) %}
+<div class="product-card filter-item" 
+     data-category="{{ product.category }}" 
+     data-name="{{ product.name|lower }}">
+     
+    <div class="product-image {% if product.stock < 1 %}agotado{% endif %}">
+        <img src="{{ product.image }}" alt="{{ product.name }}">
+    </div>
+    
+    <div class="product-info">
+        <span style="font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px;">{{ product.category }}</span>
+        <h3 style="margin-top: 5px;">{{ product.name }}</h3>
+        
+        {% if product.stock > 0 and product.stock <= 3 %}
+            <span style="font-size: 0.7rem; color: #e67e22; font-weight: bold;">¡Solo quedan {{ product.stock }}!</span>
+        {% endif %}
+
+        <p class="price">${{ "{:,.0f}".format(product.price).replace(',', '.') }}</p>
+        
+        <div style="display: flex; gap: 5px; margin-top: auto;">
+             {% if product.stock > 0 %}
+                <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn-gold" style="flex: 3; font-size: 0.8rem; padding: 10px 0; display: flex; align-items: center; justify-content: center;">
+                    AÑADIR
+                </a>
+                
+                <a href="https://wa.me/56968498218?text=Hola, me interesa: {{ product.name }}" target="_blank" style="flex: 1; background: #25D366; color: white; display: flex; align-items: center; justify-content: center; border-radius: 2px; font-size: 1.2rem; transition: 0.2s;">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+            {% else %}
+                <button disabled style="width: 100%; background: #eee; border:none; color: #999; font-size: 0.8rem; cursor: not-allowed; padding: 10px;">AGOTADO</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% block title %}Inicio | LimaLimoon{% endblock %}
+
+{% block content %}
+
+<style>
+    /* --- ESTILOS EXCLUSIVOS STOCK Y SELLO DE AGUA --- */
+    .product-image {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Efecto cuando está agotado */
+    .product-image.agotado img {
+        opacity: 0.5;
+        filter: grayscale(100%); /* Blanco y negro */
+    }
+
+    /* Sello de agua "AGOTADO" */
+    .product-image.agotado::after {
+        content: "AGOTADO";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg); /* Centrado y rotado */
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #c0392b;
+        border: 3px solid #c0392b;
+        padding: 5px 15px;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: 10;
+        letter-spacing: 2px;
+        pointer-events: none;
+    }
+
+    /* Estilos tabs anteriores */
+    .tab-btn { padding: 8px 20px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; color: #666; }
+    .tab-btn:hover { background: #f9f9f9; color: #333; }
+    .tab-btn.active { background: var(--gold); color: white; border-color: var(--gold); font-weight: bold; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); }
+</style>
+
+<section class="hero-section" style="
+    background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('{{ imagen_portada }}');
+    background-size: cover; 
+    background-position: center; 
+    height: 55vh; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;">
+    
+    <div style="text-align: center; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+        <h1 style="font-family: var(--font-title); font-size: 4rem; margin-bottom: 10px;">LimaLimoon</h1>
+        <p style="letter-spacing: 4px; text-transform: uppercase; font-size: 1.1rem;">Beauty Store</p>
+    </div>
+</section>
+
+<div class="container" style="padding: 40px 0; min-height: 80vh;">
+
+    <div style="margin-bottom: 40px;">
+        
+        <div class="search-wrapper" style="max-width: 500px; margin: 0 auto 30px auto; position: relative;">
+            <input type="text" id="searchInput" placeholder="Buscar producto..." onkeyup="applyFilters()" 
+                   style="width: 100%; padding: 12px 20px; border-radius: 30px; border: 1px solid #ddd; outline: none;">
+            <i class="fas fa-search" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #ccc;"></i>
+        </div>
+
+        <div class="category-tabs-container" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+            <button class="tab-btn active" onclick="setCategory('all', this)">Todo</button>
+            <button class="tab-btn" onclick="setCategory('Labios', this)">Labios</button>
+            <button class="tab-btn" onclick="setCategory('Ojos', this)">Ojos</button>
+            <button class="tab-btn" onclick="setCategory('Rostro', this)">Rostro</button>
+            <button class="tab-btn" onclick="setCategory('Skincare', this)">Skincare</button>
+            <button class="tab-btn" onclick="setCategory('Cuerpo', this)">Cuerpo</button>
+            <button class="tab-btn" onclick="setCategory('Sets', this)">Sets</button>
+        </div>
+    </div>
+
+    <div class="product-grid" id="productGrid">
+        {% for product in products %}
+            {{ render_product_card(product) }}
+        {% else %}
+            <p style="text-align: center; width: 100%; color: #999; grid-column: 1/-1; padding: 50px;">
+                No hay productos cargados en el sistema.
+            </p>
+        {% endfor %}
+    </div>
+    
+    <p id="noResults" style="display: none; text-align: center; margin-top: 50px; color: #888;">
+        No encontramos productos con esos filtros.
+    </p>
+
+</div>
+
+<script>
+    let currentCategory = 'all';
+
+    function setCategory(category, btnElement) {
+        currentCategory = category;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const items = document.querySelectorAll('.filter-item');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+            const itemCategory = item.getAttribute('data-category');
+            const itemName = item.getAttribute('data-name'); 
+            
+            const matchesCategory = (currentCategory === 'all' || itemCategory === currentCategory);
+            const matchesSearch = itemName.includes(searchText);
+
+            if (matchesCategory && matchesSearch) {
+                item.style.display = 'flex';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        const noMsg = document.getElementById('noResults');
+        noMsg.style.display = (visibleCount === 0) ? 'block' : 'none';
+    }
+</script>
+
+{% endblock %}
