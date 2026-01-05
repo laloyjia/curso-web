@@ -1,61 +1,132 @@
 {% extends "layout.html" %}
 {% block title %}Ventas | Admin{% endblock %}
+
 {% block content %}
 <div class="container section-padding" style="margin-top: 40px;">
-    <h2>Historial de Ventas</h2>
-    <p style="color: #666;">Pedidos realizados a través de la web.</p>
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2>Gestión de Ventas</h2>
+    </div>
 
-    <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 30px;">
-        {% for order in orders %}
-        <div style="background: white; border: 1px solid #eee; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
-            
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                <div>
-                    <strong>Orden #{{ order.id }}</strong> 
-                    <span style="color: #999; font-size: 0.9rem;"> • {{ order.date_ordered.strftime('%d/%m/%Y %H:%M') }}</span>
-                </div>
-                <div style="color: var(--gold); font-weight: bold;">
-                    Total: ${{ "{:,.0f}".format(order.total_price).replace(',', '.') }}
-                </div>
+    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+        <button onclick="openTab('pendientes', event)" class="tab-btn active">⏳ Pendientes</button>
+        <button onclick="openTab('completados', event)" class="tab-btn">✅ Completados</button>
+        <button onclick="openTab('cancelados', event)" class="tab-btn">🗑️ Eliminados</button>
+    </div>
+
+    <div id="pendientes" class="tab-content">
+        {% for order in orders if order.status == 'Pendiente' %}
+        <div class="order-card">
+            <div class="card-header">
+                <div><strong>Orden #{{ order.id }}</strong> <small>{{ order.date_ordered.strftime('%d/%m %H:%M') }}</small></div>
+                <div class="price">${{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</div>
             </div>
-            
-            <div style="font-size: 0.9rem; color: #555;">
-                <p style="margin: 5px 0;"><strong>Cliente:</strong> {{ order.user_id }} (ID Usuario)</p>
-                <p style="margin: 5px 0;"><strong>Detalle:</strong></p>
-                <ul style="margin-top: 5px; padding-left: 20px;">
+            <div class="card-body">
+                <p><strong>Cliente:</strong> {{ order.user_id }}</p>
+                <ul>
                     {% for detail in order.details %}
-                    <li>{{ detail.quantity }}x {{ detail.product_name }} (${{ "{:,.0f}".format(detail.product_price).replace(',', '.') }})</li>
+                    <li>{{ detail.quantity }}x {{ detail.product_name }}</li>
                     {% endfor %}
                 </ul>
             </div>
-
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong>Estado:</strong> 
-                    <span style="background: #f4f4f4; padding: 2px 8px; border-radius: 4px;">{{ order.status }}</span>
-                </div>
-                <div>
-                    <a href="{{ url_for('gestionar_orden_estado', order_id=order.id, action='completar') }}" 
-                       style="color: green; margin-right: 15px; text-decoration: none; font-weight: bold;" title="Marcar como Pagado">
-                        <i class="fas fa-check-circle"></i> OK
-                    </a>
-                    
-                    <a href="{{ url_for('gestionar_orden_estado', order_id=order.id, action='cancelar') }}" 
-                       onclick="return confirm('¿Seguro? Esto CANCELA la orden y DEVUELVE el stock al inventario.');"
-                       style="color: red; text-decoration: none; font-weight: bold;" title="Cancelar y Devolver Stock">
-                        <i class="fas fa-times-circle"></i> Cancelar (X)
-                    </a>
-                </div>
+            <div class="card-actions">
+                <a href="{{ url_for('gestionar_orden_estado', order_id=order.id, action='completar') }}" class="btn-action ok">
+                    <i class="fas fa-check"></i> Completar
+                </a>
+                <a href="{{ url_for('gestionar_orden_estado', order_id=order.id, action='cancelar') }}" 
+                   onclick="return confirm('¿Cancelar y devolver stock?');" class="btn-action cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
             </div>
-
         </div>
         {% else %}
-        <p style="text-align: center; color: #999;">No hay ventas registradas aún.</p>
+        <p class="empty-msg">No hay pedidos pendientes.</p>
         {% endfor %}
     </div>
 
-    <div style="margin-top: 30px;">
+    <div id="completados" class="tab-content" style="display: none;">
+        {% for order in orders if order.status == 'Completada' %}
+        <div class="order-card done">
+            <div class="card-header">
+                <div><strong>Orden #{{ order.id }}</strong> <small>{{ order.date_ordered.strftime('%d/%m %H:%M') }}</small></div>
+                <div class="price">${{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</div>
+            </div>
+            <div class="card-body">
+                <p><strong>Cliente:</strong> {{ order.user_id }}</p>
+                <ul>
+                    {% for detail in order.details %}
+                    <li>{{ detail.quantity }}x {{ detail.product_name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div style="margin-top: 10px; color: green; font-weight: bold; font-size: 0.9rem;">
+                ✅ Pedido Completado
+            </div>
+        </div>
+        {% else %}
+        <p class="empty-msg">No hay historial de completados.</p>
+        {% endfor %}
+    </div>
+
+    <div id="cancelados" class="tab-content" style="display: none;">
+        {% for order in orders if order.status == 'Cancelada' %}
+        <div class="order-card deleted">
+            <div class="card-header">
+                <div><strong>Orden #{{ order.id }}</strong> <small>{{ order.date_ordered.strftime('%d/%m %H:%M') }}</small></div>
+                <div class="price">${{ "{:,.0f}".format(order.total_price).replace(',', '.') }}</div>
+            </div>
+            <div class="card-body">
+                <p><strong>Cliente:</strong> {{ order.user_id }}</p>
+                <ul>
+                    {% for detail in order.details %}
+                    <li>{{ detail.quantity }}x {{ detail.product_name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div style="margin-top: 10px; color: red; font-weight: bold; font-size: 0.9rem;">
+                🗑️ Pedido Eliminado (Stock devuelto)
+            </div>
+        </div>
+        {% else %}
+        <p class="empty-msg">No hay pedidos eliminados.</p>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 30px; text-align: center;">
         <a href="{{ url_for('admin_dashboard') }}" class="btn-gold">Volver al Panel</a>
     </div>
+
 </div>
+
+<style>
+    .tab-btn { padding: 10px 20px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 20px; font-weight: bold; color: #666; }
+    .tab-btn.active { background: var(--gold); color: white; border-color: var(--gold); }
+    
+    .order-card { background: white; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+    .order-card.done { border-left: 5px solid green; }
+    .order-card.deleted { border-left: 5px solid red; opacity: 0.7; }
+    
+    .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; }
+    .price { color: var(--gold); font-weight: bold; }
+    .card-actions { display: flex; gap: 10px; margin-top: 15px; border-top: 1px dashed #eee; padding-top: 15px; }
+    
+    .btn-action { padding: 5px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block; }
+    .btn-action.ok { background: #e8f5e9; color: green; }
+    .btn-action.cancel { background: #ffebee; color: red; }
+    
+    .empty-msg { text-align: center; color: #999; padding: 20px; border: 2px dashed #eee; border-radius: 10px; }
+</style>
+
+<script>
+    function openTab(tabName, event) {
+        var contents = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < contents.length; i++) { contents[i].style.display = "none"; }
+        
+        var btns = document.getElementsByClassName("tab-btn");
+        for (var i = 0; i < btns.length; i++) { btns[i].classList.remove("active"); }
+        
+        document.getElementById(tabName).style.display = "block";
+        event.currentTarget.classList.add("active");
+    }
+</script>
 {% endblock %}
