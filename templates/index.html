@@ -10,6 +10,10 @@
      
     <div class="product-image {% if product.stock < 1 %}agotado{% endif %}">
         <img src="{{ product.image }}" alt="{{ product.name }}">
+        
+        <div class="desc-overlay">
+            <p>{{ product.description }}</p>
+        </div>
     </div>
     
     <div class="product-info">
@@ -53,28 +57,44 @@
     /* Efecto cuando está agotado */
     .product-image.agotado img {
         opacity: 0.5;
-        filter: grayscale(100%); /* Blanco y negro */
+        filter: grayscale(100%);
     }
 
     /* Sello de agua "AGOTADO" */
     .product-image.agotado::after {
         content: "AGOTADO";
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-45deg); /* Centrado y rotado */
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: #c0392b;
-        border: 3px solid #c0392b;
-        padding: 5px 15px;
-        background: rgba(255, 255, 255, 0.8);
-        z-index: 10;
-        letter-spacing: 2px;
-        pointer-events: none;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 1.2rem; font-weight: 800;
+        color: #c0392b; border: 3px solid #c0392b;
+        padding: 5px 15px; background: rgba(255, 255, 255, 0.8);
+        z-index: 10; letter-spacing: 2px; pointer-events: none;
     }
 
-    /* Estilos tabs anteriores */
+    /* --- ✨ NUEVO ESTILO: OVERLAY DE DESCRIPCIÓN --- */
+    .desc-overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7); /* Fondo negro semitransparente */
+        color: white;
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; /* Invisible al inicio */
+        transition: opacity 0.3s ease;
+        padding: 20px;
+        text-align: center;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        overflow-y: auto; /* Por si el texto es muy largo */
+    }
+
+    /* Cuando el mouse pasa por encima de la imagen, muestra el overlay */
+    .product-image:hover .desc-overlay {
+        opacity: 1;
+    }
+
+    /* Estilos tabs */
     .tab-btn { padding: 8px 20px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; color: #666; }
     .tab-btn:hover { background: #f9f9f9; color: #333; }
     .tab-btn.active { background: var(--gold); color: white; border-color: var(--gold); font-weight: bold; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); }
