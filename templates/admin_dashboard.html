@@ -1,108 +1,123 @@
 {% extends "layout.html" %}
-
-{% block title %}Panel de Administración | LimaLimoon{% endblock %}
+{% block title %}Panel de Control{% endblock %}
 
 {% block content %}
-<div class="container section-padding" style="padding-top: 60px; padding-bottom: 80px;">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container section-padding" style="margin-top: 40px;">
     
-    <div style="text-align: center; margin-bottom: 50px;">
-        <h1 style="font-family: var(--font-title); color: #1a1a1a;">Panel de Control</h1>
-        <p style="color: #666;">Bienvenido Admin. ¿Qué deseas gestionar hoy?</p>
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h2>👋 Hola, {{ current_user.nombre }}</h2>
+        <p style="color: #666;">Resumen de tu negocio hoy</p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 1000px; margin: 0 auto;">
-        
-        <a href="{{ url_for('admin_productos') }}" class="admin-card">
-            <div class="icon-box"><i class="fas fa-boxes fa-3x"></i></div>
-            <h3>Productos</h3>
-            <p>Crear, editar y eliminar productos de la tienda.</p>
-        </a>
-
-        <a href="{{ url_for('admin_stock') }}" class="admin-card">
-            <div class="icon-box"><i class="fas fa-clipboard-check fa-3x"></i></div>
-            <h3>Inventario</h3>
-            <p>Ajuste rápido de cantidades y control de stock bajo.</p>
-        </a>
-
-        <a href="{{ url_for('lista_usuarios') }}" class="admin-card">
-            <div class="icon-box"><i class="fas fa-users fa-3x"></i></div>
-            <h3>Usuarios</h3>
-            <p>Ver lista de clientes registrados.</p>
-        </a>
-
-        <a href="{{ url_for('admin_ordenes') }}" class="admin-card">
-            <div class="icon-box"><i class="fas fa-shopping-bag fa-3x"></i></div>
-            <h3>Ventas</h3>
-            <p>Historial de pedidos y detalles de compra.</p>
-        </a>
-
+    <div class="dashboard-grid">
+        <div class="stat-card gold">
+            <div class="icon">💰</div>
+            <div class="info">
+                <h3>${{ "{:,.0f}".format(total_dinero).replace(',', '.') }}</h3>
+                <p>Ventas Totales</p>
+            </div>
+        </div>
+        <div class="stat-card {% if pendientes > 0 %}alert{% endif %}">
+            <div class="icon">⏳</div>
+            <div class="info">
+                <h3>{{ pendientes }}</h3>
+                <p>Pedidos Pendientes</p>
+            </div>
+            {% if pendientes > 0 %}
+            <a href="{{ url_for('admin_ordenes') }}" class="small-link">Ver &rarr;</a>
+            {% endif %}
+        </div>
+        <div class="stat-card {% if low_stock > 0 %}danger{% endif %}">
+            <div class="icon">📦</div>
+            <div class="info">
+                <h3>{{ low_stock }}</h3>
+                <p>Stock Bajo</p>
+            </div>
+            {% if low_stock > 0 %}
+            <a href="{{ url_for('admin_stock') }}" class="small-link">Reponer &rarr;</a>
+            {% endif %}
+        </div>
+        <div class="stat-card">
+            <div class="icon">👥</div>
+            <div class="info">
+                <h3>{{ clientes }}</h3>
+                <p>Clientes</p>
+            </div>
+        </div>
     </div>
 
-    <div style="text-align: center; margin-top: 60px; display: flex; justify-content: center; gap: 20px;">
-        <a href="{{ url_for('home') }}" class="btn-outline">
-            <i class="fas fa-store"></i> Ver Tienda
-        </a>
-        <a href="{{ url_for('logout') }}" class="btn-outline logout">
-            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-        </a>
+    <div class="chart-section" style="margin-top: 40px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;">
+        <h3 style="margin-bottom: 20px; color: #333;">📉 Tráfico de Hoy (Visitas)</h3>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="visitsChart"></canvas>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 50px; margin-bottom: 20px;">Acceso Rápido</h3>
+    <div class="quick-menu">
+        <a href="{{ url_for('admin_ordenes') }}" class="menu-btn"><i class="fas fa-shopping-bag"></i> Ventas</a>
+        <a href="{{ url_for('admin_productos') }}" class="menu-btn"><i class="fas fa-tshirt"></i> Productos</a>
+        <a href="{{ url_for('admin_stock') }}" class="menu-btn"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="{{ url_for('lista_usuarios') }}" class="menu-btn"><i class="fas fa-users"></i> Usuarios</a>
     </div>
 
 </div>
 
 <style>
-    /* Estilos locales para el Dashboard */
-    .admin-card {
-        background: white;
-        padding: 40px 25px;
-        border-radius: 12px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-        text-align: center;
-        text-decoration: none;
-        color: inherit;
-        transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-        height: 100%;
-        box-sizing: border-box;
-        display: block;
-    }
-    .admin-card:hover {
-        transform: translateY(-5px);
-        border-color: var(--gold);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
-    .icon-box {
-        color: var(--gold);
-        margin-bottom: 20px;
-    }
-    .admin-card h3 {
-        margin: 0 0 10px 0;
-        color: #333;
-        font-family: var(--font-title);
-    }
-    .admin-card p {
-        color: #777;
-        font-size: 0.9rem;
-        margin: 0;
-        line-height: 1.5;
-    }
-    .btn-outline {
-        padding: 10px 25px;
-        border-radius: 30px;
-        text-decoration: none;
-        border: 1px solid #ccc;
-        color: #555;
-        transition: 0.2s;
-    }
-    .btn-outline:hover {
-        background: #f5f5f5;
-        color: #333;
-    }
-    .btn-outline.logout {
-        border-color: #ffcccc;
-        color: #e74c3c;
-    }
-    .btn-outline.logout:hover {
-        background: #fff5f5;
-    }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; border: 1px solid #f0f0f0; transition: transform 0.2s; position: relative; }
+    .stat-card:hover { transform: translateY(-5px); }
+    .stat-card.gold { border-left: 5px solid #D4AF37; }
+    .stat-card.alert { border-left: 5px solid orange; background: #fffdf5; }
+    .stat-card.danger { border-left: 5px solid red; background: #fff5f5; }
+    .icon { font-size: 2.5rem; }
+    .info h3 { margin: 0; font-size: 1.8rem; color: #333; }
+    .info p { margin: 0; color: #777; font-size: 0.9rem; }
+    .small-link { position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; color: #D4AF37; text-decoration: none; font-weight: bold; }
+    .quick-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+    .menu-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: white; border: 1px solid #eee; border-radius: 10px; text-decoration: none; color: #555; font-weight: bold; transition: 0.3s; }
+    .menu-btn i { font-size: 1.5rem; margin-bottom: 10px; color: #D4AF37; }
+    .menu-btn:hover { background: #D4AF37; color: white; }
+    .menu-btn:hover i { color: white; }
 </style>
+
+<script>
+    const ctx = document.getElementById('visitsChart').getContext('2d');
+    const labels = {{ chart_labels | safe }};
+    const data = {{ chart_data | safe }};
+
+    const visitsChart = new Chart(ctx, {
+        type: 'line', 
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Visitantes',
+                data: data,
+                borderColor: '#D4AF37',
+                backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#D4AF37',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
 {% endblock %}
