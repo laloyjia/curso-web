@@ -6,9 +6,22 @@
 
 <div class="container section-padding" style="margin-top: 40px;">
     
-    <div style="text-align: center; margin-bottom: 40px;">
+    <div style="text-align: center; margin-bottom: 30px;">
         <h2>👋 Hola, {{ current_user.nombre }}</h2>
-        <p style="color: #666;">Resumen de tu negocio hoy</p>
+    </div>
+
+    <h3 style="margin-bottom: 20px;">Acceso Rápido</h3>
+    <div class="quick-menu">
+        <a href="{{ url_for('admin_ordenes') }}" class="menu-btn"><i class="fas fa-shopping-bag"></i> Ventas</a>
+        <a href="{{ url_for('admin_productos') }}" class="menu-btn"><i class="fas fa-tshirt"></i> Productos</a>
+        <a href="{{ url_for('admin_stock') }}" class="menu-btn"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="{{ url_for('lista_usuarios') }}" class="menu-btn"><i class="fas fa-users"></i> Usuarios</a>
+    </div>
+
+    <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h3 style="color: #333;">Resumen de tu negocio hoy</h3>
     </div>
 
     <div class="dashboard-grid">
@@ -53,14 +66,6 @@
         <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="visitsChart"></canvas>
         </div>
-    </div>
-
-    <h3 style="margin-top: 50px; margin-bottom: 20px;">Acceso Rápido</h3>
-    <div class="quick-menu">
-        <a href="{{ url_for('admin_ordenes') }}" class="menu-btn"><i class="fas fa-shopping-bag"></i> Ventas</a>
-        <a href="{{ url_for('admin_productos') }}" class="menu-btn"><i class="fas fa-tshirt"></i> Productos</a>
-        <a href="{{ url_for('admin_stock') }}" class="menu-btn"><i class="fas fa-boxes"></i> Stock</a>
-        <a href="{{ url_for('lista_usuarios') }}" class="menu-btn"><i class="fas fa-users"></i> Usuarios</a>
     </div>
 
 </div>
