@@ -8,21 +8,29 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
-# Importaciones para la nube
+# Importaciones para la nube y correo
 import cloudinary
 import cloudinary.uploader
+from flask_mail import Mail, Message  # <--- IMPORTANTE: Nuevo cartero
 
 app = Flask(__name__)
 
 # ==========================================
-# --- 🟢 ÁREA DE CLAVES ---
+# --- 🟢 ÁREA DE CLAVES (SECRETO) ---
 # ==========================================
 
+# 1. CLAVES DE CLOUDINARY (IMÁGENES)
 CLOUDINARY_CLOUD_NAME = "deoprp7l7"
 CLOUDINARY_API_KEY = "313623665287215"
 CLOUDINARY_API_SECRET = "u1KdKT-9WMjiSBJaA6RbBA928rA"
 
+# 2. CLAVE DE BASE DE DATOS (NEON)
 NEON_DB_URL = "postgresql://neondb_owner:npg_XZK5gAI0WNvh@ep-silent-union-a4u8ra5u-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
+
+# 3. CLAVES DE CORREO (GMAIL)
+# ¡¡¡PEGA AQUÍ TU CLAVE DE 16 LETRAS QUE TE DIO GOOGLE!!! 👇
+GMAIL_APP_PASSWORD = "uduc yeyy tatb yckq" 
+GMAIL_USER = "chechidominguezr@gmail.com"
 
 # ==========================================
 # --- FIN ÁREA DE CLAVES -------------------
@@ -33,15 +41,16 @@ app.config['SECRET_KEY'] = 'limalimoon_clave_super_secreta'
 app.config['SQLALCHEMY_DATABASE_URI'] = NEON_DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Configuración de Cloudinary
-cloudinary.config(
-    cloud_name=CLOUDINARY_CLOUD_NAME,
-    api_key=CLOUDINARY_API_KEY,
-    api_secret=CLOUDINARY_API_SECRET
-)
+# Configuración de Correo (Flask-Mail)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = GMAIL_USER
+app.config['MAIL_PASSWORD'] = GMAIL_APP_PASSWORD
 
 # Inicialización
 db = SQLAlchemy(app)
+mail = Mail(app)  # <--- Iniciamos el servicio de correo
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -90,7 +99,14 @@ class CartItem(db.Model):
     quantity = db.Column(db.Integer, default=1)
     product = db.relationship('Product')
 
-# --- CARGADORES Y DECORADORES ---
+# --- CONFIGURACIÓN CLOUDINARY ---
+cloudinary.config(
+    cloud_name=CLOUDINARY_CLOUD_NAME,
+    api_key=CLOUDINARY_API_KEY,
+    api_secret=CLOUDINARY_API_SECRET
+)
+
+# --- CARGADORES ---
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -186,8 +202,6 @@ def remove_from_cart(product_id):
         db.session.commit()
     return redirect(url_for('carrito'))
 
-# --- PROCESO DE PAGO (WHATSAPP) ---
-
 @app.route('/confirmar_pedido', methods=['POST'])
 @login_required
 def confirmar_pedido():
@@ -199,7 +213,6 @@ def confirmar_pedido():
         items_msg = []
         direccion = request.form.get('direccion') or current_user.direccion or "Por coordinar"
 
-        # Calcular totales
         for item in cart_items:
             if not item.product: continue
             total_linea = item.product.price * item.quantity
@@ -209,12 +222,10 @@ def confirmar_pedido():
         costo_envio = 0 if subtotal > 25000 else 3500
         total_final = subtotal + costo_envio
 
-        # Crear Orden
         new_order = Order(user_id=current_user.id, total_price=total_final, status='Pendiente')
         db.session.add(new_order)
         db.session.commit()
 
-        # Guardar Detalles y Descontar Stock
         for item in cart_items:
             if item.product:
                 item.product.stock -= item.quantity
@@ -229,7 +240,6 @@ def confirmar_pedido():
         
         db.session.commit()
 
-        # Generar Link WhatsApp
         msg = f"Hola LimaLimoon! 🍋 Nuevo pedido de *{current_user.nombre}*:\n\n"
         for i in items_msg:
             msg += f"- {i['cant']}x {i['nombre']} (${'{:,.0f}'.format(i['precio']).replace(',','.')})\n"
@@ -247,7 +257,7 @@ def confirmar_pedido():
         flash('Error al procesar el pedido.', 'error')
         return redirect(url_for('carrito'))
 
-# --- AUTH ---
+# --- AUTH Y REGISTRO (AQUÍ ESTÁ LA MAGIA DEL CORREO) ---
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -270,19 +280,50 @@ def registro():
         if User.query.filter_by(email=email).first():
             flash('Email ya registrado.', 'error')
         else:
+            # 1. Crear Usuario
+            nombre = request.form.get('nombre')
+            apellido = request.form.get('apellido')
+            telefono = request.form.get('telefono')
+            
             new_user = User(
-                nombre=request.form.get('nombre'), 
-                apellido=request.form.get('apellido'),
+                nombre=nombre, 
+                apellido=apellido,
                 direccion=request.form.get('direccion'), 
-                telefono=request.form.get('telefono'),
+                telefono=telefono,
                 email=email, 
                 password=generate_password_hash(request.form.get('password')),
                 is_admin=False
             )
             db.session.add(new_user)
             db.session.commit()
+            
+            # 2. ENVIAR CORREO DE ALERTA AL ADMIN (TÚ) 📧
+            try:
+                msg = Message(
+                    subject="🔔 Nuevo Cliente en LimaLimoon",
+                    sender=app.config['MAIL_USERNAME'],
+                    recipients=[app.config['MAIL_USERNAME']], # Te lo envías a ti misma
+                    body=f"""
+                    ¡Hola Chechi!
+
+                    Alguien nuevo se ha registrado en la tienda:
+                    
+                    👤 Nombre: {nombre} {apellido}
+                    📧 Email: {email}
+                    📞 Teléfono: {telefono}
+                    
+                    Revisa el panel de control para más detalles.
+                    """
+                )
+                mail.send(msg)
+                print(">>> Correo de alerta enviado exitosamente.")
+            except Exception as e:
+                print(f"Error enviando correo: {e}")
+                # No detenemos el registro si falla el correo, solo lo imprimimos
+            
             flash('Cuenta creada. Inicia sesión.', 'success')
             return redirect(url_for('login'))
+            
     return render_template('auth/register.html')
 
 @app.route('/logout')
@@ -309,13 +350,30 @@ def editar_perfil():
         return redirect(url_for('perfil'))
     return render_template('editar_perfil.html')
 
-# --- ADMIN (GESTIÓN COMPLETA) ---
+# --- ADMIN DASHBOARD CON ESTADÍSTICAS ---
 
 @app.route('/admin')
 @login_required
 @admin_required
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    # 1. Calcular Dinero Total (Solo de ventas NO canceladas)
+    ventas_validas = Order.query.filter(Order.status != 'Cancelada').all()
+    total_dinero = sum(o.total_price for o in ventas_validas)
+
+    # 2. Contar Pedidos Pendientes
+    pendientes = Order.query.filter_by(status='Pendiente').count()
+
+    # 3. Alerta de Stock Bajo (Menos de 5 unidades)
+    low_stock = Product.query.filter(Product.stock <= 5).count()
+
+    # 4. Cantidad de Clientes (excluyendo al admin)
+    clientes = User.query.filter(User.is_admin == False).count()
+
+    return render_template('admin_dashboard.html', 
+                         total_dinero=total_dinero, 
+                         pendientes=pendientes, 
+                         low_stock=low_stock,
+                         clientes=clientes)
 
 @app.route('/admin/usuarios')
 @login_required
@@ -335,7 +393,6 @@ def admin_productos():
             description = request.form.get('description')
             category = request.form.get('category')
             
-            # LOGICA DE SUBIDA A CLOUDINARY
             image_url = "https://via.placeholder.com/150"
             f = request.files.get('image')
             
@@ -394,13 +451,10 @@ def eliminar_producto(id):
         flash('No se puede eliminar (tiene pedidos asociados).', 'error')
     return redirect(url_for('admin_productos'))
 
-# --- 🚀 RUTAS DE STOCK (ESTAS ERAN LAS QUE FALTABAN) 🚀 ---
-
 @app.route('/admin/stock')
 @login_required
 @admin_required
 def admin_stock():
-    # Ordenar productos alfabéticamente para facilitar la gestión
     products = Product.query.order_by(Product.name).all()
     return render_template('admin_stock.html', products=products)
 
@@ -421,19 +475,12 @@ def update_stock(product_id):
             
     return redirect(url_for('admin_stock'))
 
-# --- RUTA DE VENTAS / PEDIDOS (AGREGAR AL FINAL DE APP.PY) ---
-
 @app.route('/admin/ordenes')
 @login_required
 @admin_required
 def admin_ordenes():
-    # Traemos todas las órdenes, de la más nueva a la más vieja
     orders = Order.query.order_by(Order.date_ordered.desc()).all()
     return render_template('admin_orders.html', orders=orders)
-
-# ==========================================
-# --- ⚙️ GESTIÓN DE ESTADOS DE ORDEN ---
-# ==========================================
 
 @app.route('/admin/orden/<int:order_id>/<action>')
 @login_required
@@ -441,52 +488,40 @@ def admin_ordenes():
 def gestionar_orden_estado(order_id, action):
     order = Order.query.get_or_404(order_id)
     
-    # Caso 1: Marcar como Completada (Solo informativo)
     if action == 'completar':
         order.status = 'Completada'
         flash(f'Orden #{order.id} marcada como COMPLETADA.', 'success')
 
-    # Caso 2: Cancelar/Eliminar (DEVOLVER STOCK)
     elif action == 'cancelar':
-        # Solo devolvemos stock si la orden no estaba cancelada ya
         if order.status != 'Cancelada':
             print(f"Cancelando orden #{order.id} y devolviendo stock...")
-            
-            # Recorremos los detalles de esa orden
             for detalle in order.details:
-                # Buscamos el producto original por su nombre
                 producto_original = Product.query.filter_by(name=detalle.product_name).first()
-                
                 if producto_original:
-                    # LE DEVOLVEMOS EL STOCK
                     producto_original.stock += detalle.quantity
-                    print(f"Devuelto {detalle.quantity} al producto {producto_original.name}")
-            
             order.status = 'Cancelada'
-            flash(f'Orden #{order.id} CANCELADA. Stock restaurado al inventario.', 'warning')
+            flash(f'Orden #{order.id} CANCELADA. Stock restaurado.', 'warning')
         else:
             flash('Esta orden ya estaba cancelada.', 'info')
 
     db.session.commit()
-    # Redirigir de vuelta a la lista de órdenes
     return redirect(url_for('admin_ordenes'))
 
-# --- 🛠️ HERRAMIENTA DE REPARACIÓN (Solo úsala una vez) ---
+# --- HERRAMIENTAS DB ---
 
 @app.route('/db-setup')
 def db_setup():
     try:
         with app.app_context():
             db.create_all()
-        return "<h1>✅ Tablas creadas correctamente. Ya puedes ir a Ventas.</h1>"
+        return "<h1>✅ Tablas actualizadas.</h1>"
     except Exception as e:
         return f"<h1>❌ Error: {e}</h1>"
-# --- FINALIZACIÓN ---
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        # Admin automático para Neon
+        # Admin automático
         if not User.query.filter_by(email='admin@limalimoon.cl').first():
             print(">>> Creando Admin en Neon...")
             admin = User(
@@ -499,3 +534,4 @@ if __name__ == '__main__':
             db.session.commit()
     
     app.run(debug=True)
+
