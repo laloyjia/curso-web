@@ -431,7 +431,56 @@ def admin_ordenes():
     orders = Order.query.order_by(Order.date_ordered.desc()).all()
     return render_template('admin_orders.html', orders=orders)
 
+# ==========================================
+# --- ⚙️ GESTIÓN DE ESTADOS DE ORDEN ---
+# ==========================================
 
+@app.route('/admin/orden/<int:order_id>/<action>')
+@login_required
+@admin_required
+def gestionar_orden_estado(order_id, action):
+    order = Order.query.get_or_404(order_id)
+    
+    # Caso 1: Marcar como Completada (Solo informativo)
+    if action == 'completar':
+        order.status = 'Completada'
+        flash(f'Orden #{order.id} marcada como COMPLETADA.', 'success')
+
+    # Caso 2: Cancelar/Eliminar (DEVOLVER STOCK)
+    elif action == 'cancelar':
+        # Solo devolvemos stock si la orden no estaba cancelada ya
+        if order.status != 'Cancelada':
+            print(f"Cancelando orden #{order.id} y devolviendo stock...")
+            
+            # Recorremos los detalles de esa orden
+            for detalle in order.details:
+                # Buscamos el producto original por su nombre
+                producto_original = Product.query.filter_by(name=detalle.product_name).first()
+                
+                if producto_original:
+                    # LE DEVOLVEMOS EL STOCK
+                    producto_original.stock += detalle.quantity
+                    print(f"Devuelto {detalle.quantity} al producto {producto_original.name}")
+            
+            order.status = 'Cancelada'
+            flash(f'Orden #{order.id} CANCELADA. Stock restaurado al inventario.', 'warning')
+        else:
+            flash('Esta orden ya estaba cancelada.', 'info')
+
+    db.session.commit()
+    # Redirigir de vuelta a la lista de órdenes
+    return redirect(url_for('admin_ordenes'))
+
+# --- 🛠️ HERRAMIENTA DE REPARACIÓN (Solo úsala una vez) ---
+
+@app.route('/db-setup')
+def db_setup():
+    try:
+        with app.app_context():
+            db.create_all()
+        return "<h1>✅ Tablas creadas correctamente. Ya puedes ir a Ventas.</h1>"
+    except Exception as e:
+        return f"<h1>❌ Error: {e}</h1>"
 # --- FINALIZACIÓN ---
 
 if __name__ == '__main__':
