@@ -380,7 +380,38 @@ def admin_dashboard():
 @admin_required
 def lista_usuarios():
     return render_template('admin_usuarios.html', usuarios=User.query.all())
+@app.route('/admin/usuario/eliminar/<int:id>')
+@login_required
+@admin_required
+def eliminar_usuario(id):
+    user = User.query.get_or_404(id)
+    
+    # 1. PROTECCIÓN: No te puedes borrar a ti misma
+    if user.id == current_user.id:
+        flash('⛔ ¡No puedes eliminar tu propia cuenta de administrador!', 'error')
+        return redirect(url_for('lista_usuarios'))
+    
+    # 2. PROTECCIÓN: No borrar si tiene compras (Historial de ventas)
+    # Buscamos si este usuario tiene alguna orden asociada
+    ordenes_usuario = Order.query.filter_by(user_id=id).first()
+    
+    if ordenes_usuario:
+        flash('⚠️ No se puede eliminar: Este usuario tiene historial de compras. Borrarlo afectaría tus reportes de venta.', 'warning')
+        return redirect(url_for('lista_usuarios'))
 
+    try:
+        # 3. Limpiar carrito del usuario antes de borrar (para que no de error)
+        CartItem.query.filter_by(user_id=id).delete()
+        
+        # 4. Borrar usuario
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'Usuario {user.nombre} eliminado correctamente.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar: {str(e)}', 'error')
+
+    return redirect(url_for('lista_usuarios'))
 @app.route('/admin/productos', methods=['GET', 'POST'])
 @login_required
 @admin_required
