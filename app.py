@@ -4,7 +4,7 @@ from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func  # <--- IMPORTANTE: Necesario para el gráfico
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -28,8 +28,8 @@ CLOUDINARY_API_SECRET = "u1KdKT-9WMjiSBJaA6RbBA928rA"
 # 2. CLAVE DE BASE DE DATOS
 NEON_DB_URL = "postgresql://neondb_owner:npg_XZK5gAI0WNvh@ep-silent-union-a4u8ra5u-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
 
-# 3. CLAVES DE CORREO
-GMAIL_APP_PASSWORD = "uduc yeyy tatb yckq" 
+# 3. CLAVES DE CORREO (Sin espacios)
+GMAIL_APP_PASSWORD = "uducyeyytatbyckq" 
 GMAIL_USER = "chechidominguezr@gmail.com"
 
 # ==========================================
@@ -374,12 +374,12 @@ def admin_dashboard():
         visitas_data.append(dict_visitas.get(i, 0))
 
     return render_template('admin_dashboard.html', 
-                         total_dinero=total_dinero, 
-                         pendientes=pendientes, 
-                         low_stock=low_stock,
-                         clientes=clientes,
-                         chart_labels=horas_labels,
-                         chart_data=visitas_data)
+                          total_dinero=total_dinero, 
+                          pendientes=pendientes, 
+                          low_stock=low_stock,
+                          clientes=clientes,
+                          chart_labels=horas_labels,
+                          chart_data=visitas_data)
 
 @app.route('/admin/usuarios')
 @login_required
